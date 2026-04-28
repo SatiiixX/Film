@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f0f1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CineVault">
+<title>CineVault</title>
+<style>
+:root{
+  --bg:#0f0f1a;--bg2:#16161f;--bg3:#1e1e2e;--bg4:#26263a;--bg5:#2e2e45;
+  --border:#2a2a3e;--border2:#38385a;
+  --text:#eeeef8;--text2:#9898b8;--text3:#56567a;
+  --accent:#7b68ee;--accent2:#6254d4;--accentbg:rgba(123,104,238,0.14);
+  --gold:#f6c90e;--gold2:#d4a800;--goldbg:rgba(246,201,14,0.13);
+  --green:#30d988;--greenbg:rgba(48,217,136,0.13);
+  --blue:#4db8ff;--bluebg:rgba(77,184,255,0.13);
+  --red:#ff5c5c;--redbg:rgba(255,92,92,0.13);
+  --orange:#ff9f43;
+  --r:16px;--r-sm:10px;--r-xs:6px;
+  --shadow:0 6px 28px rgba(0,0,0,0.55);--tr:0.18s ease;
+}
+[data-theme="light"]{
+  --bg:#f2f2f7;--bg2:#fff;--bg3:#e8e8f0;--bg4:#dcdce8;--bg5:#d0d0e0;
+  --border:#d8d8e8;--border2:#c0c0d8;--text:#1c1c2e;--text2:#50507a;--text3:#9090aa;
+  --shadow:0 4px 20px rgba(0,0,0,0.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{cursor:pointer;font-family:inherit}input,select,textarea{font-family:inherit}
+a{color:var(--accent);text-decoration:none}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+#app{display:flex;flex-direction:column;min-height:100vh}
+.navbar{display:flex;align-items:center;gap:6px;padding:0 14px;height:54px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-brand{font-size:1.15rem;font-weight:800;color:var(--gold);display:flex;align-items:center;gap:5px;white-space:nowrap}
+.nav-brand span{color:var(--text);font-weight:600}
+.nav-tabs{display:flex;gap:1px;margin-left:6px}
+.nav-tab{padding:6px 11px;border-radius:var(--r-sm);border:none;background:none;color:var(--text2);font-size:.82rem;font-weight:500;transition:var(--tr);white-space:nowrap}
+.nav-tab:hover{background:var(--bg3);color:var(--text)}.nav-tab.active{background:var(--bg4);color:var(--text)}
+.nav-spacer{flex:1}.nav-actions{display:flex;align-items:center;gap:5px}
+.icon-btn{width:34px;height:34px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--bg3);color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:15px;transition:var(--tr);flex-shrink:0;cursor:pointer}
+.icon-btn:hover{background:var(--bg4);color:var(--text);border-color:var(--border2)}
+.main-content{display:flex;flex:1;overflow:hidden;min-height:0}
+.filter-sidebar{width:232px;min-width:232px;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:3px;transition:width .22s ease,min-width .22s ease,padding .22s ease;flex-shrink:0}
+.filter-sidebar.collapsed{width:0!important;min-width:0!important;padding:0!important;overflow:hidden}
+.fs-head{display:flex;justify-content:space-between;align-items:center;padding:7px 9px;cursor:pointer;user-select:none;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);background:var(--bg3);border-radius:var(--r-xs);transition:var(--tr)}
+.fs-head:hover{background:var(--bg4);color:var(--text2)}
+.fs-body{padding:7px 4px;display:flex;flex-direction:column;gap:4px}.fs-body.closed{display:none}
+.f-label{font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;padding:0 4px;margin-top:2px}
+.f-input,.f-select{width:100%;padding:6px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-xs);color:var(--text);font-size:.8rem;outline:none;transition:var(--tr)}
+.f-input:focus,.f-select:focus{border-color:var(--accent);background:var(--bg4)}.f-select{appearance:none;cursor:pointer}
+.f-cb{display:flex;align-items:center;gap:6px;padding:3px 4px;border-radius:var(--r-xs);cursor:pointer;font-size:.78rem;color:var(--text2);transition:var(--tr)}
+.f-cb:hover{background:var(--bg3);color:var(--text)}.f-cb input{accent-color:var(--accent)}
+.range-row{display:flex;gap:4px;align-items:center;font-size:.72rem;color:var(--text3)}
+.range-row input[type=number]{width:56px;padding:4px 5px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-xs);color:var(--text);font-size:.76rem;outline:none;text-align:center}
+.f-reset{padding:7px;border-radius:var(--r-xs);border:1px solid var(--border);background:none;color:var(--text3);font-size:.74rem;width:100%;transition:var(--tr);margin-top:3px;cursor:pointer}
+.f-reset:hover{background:var(--redbg);border-color:var(--red);color:var(--red)}
+.content-area{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0}
+.content-header{display:flex;align-items:center;gap:7px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg2);flex-wrap:wrap}
+.film-count{font-size:.76rem;color:var(--text3);white-space:nowrap}
+.search-wrap{position:relative;flex:1;min-width:140px}
+.search-wrap input{width:100%;padding:7px 10px 7px 32px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:.84rem;outline:none;transition:var(--tr)}
+.search-wrap input:focus{border-color:var(--accent);background:var(--bg4)}
+.search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;pointer-events:none}
+.sort-select{padding:6px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:.78rem;outline:none;appearance:none;cursor:pointer;min-width:125px}
+.view-toggle{display:flex;gap:1px;padding:2px;background:var(--bg3);border-radius:var(--r-sm);border:1px solid var(--border)}
+.view-btn{padding:4px 8px;border-radius:var(--r-xs);border:none;background:none;color:var(--text3);font-size:13px;transition:var(--tr);cursor:pointer}
+.view-btn.active{background:var(--bg5);color:var(--text)}
+.btn{padding:7px 13px;border-radius:var(--r-sm);border:none;font-size:.82rem;font-weight:600;cursor:pointer;transition:var(--tr);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
+.btn-sm{padding:5px 9px;font-size:.74rem}
+.btn-ghost{background:none;border:1px solid var(--border);color:var(--text2)}.btn-ghost:hover{background:var(--bg3);color:var(--text)}
+.btn-danger{background:var(--redbg);border:1px solid var(--red);color:var(--red)}.btn-danger:hover{background:var(--red);color:#fff}
+.film-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(162px,1fr));gap:12px;padding:14px;align-content:start}
+.film-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:transform .17s ease,box-shadow .17s ease,border-color .17s ease;position:relative;display:flex;flex-direction:column}
+.film-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--border2)}
+.film-card.fav-card{border-color:var(--gold2)!important}
+.film-card.atmos-card{box-shadow:0 0 0 1.5px var(--gold2)}
+.card-poster{width:100%;aspect-ratio:2/3;background:var(--bg3);overflow:hidden;position:relative;flex-shrink:0}
+.card-poster img{width:100%;height:100%;object-fit:cover;transition:transform .3s ease;display:block}
+.film-card:hover .card-poster img{transform:scale(1.04)}
+.poster-ph{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--text3);font-size:.68rem}
+.poster-ph .ph-i{font-size:2rem}
+.poster-overlay{position:absolute;bottom:0;left:0;right:0;padding:22px 6px 5px;background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,transparent 100%);display:flex;gap:3px;flex-wrap:wrap;align-items:flex-end}
+.fav-pin{position:absolute;top:6px;right:6px;font-size:13px;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+.cb{padding:2px 5px;border-radius:4px;font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.02em;line-height:1.5;white-space:nowrap}
+.cb-4k{background:#1a7a4a;color:#7fffc0}.cb-fhd{background:#0a4a7a;color:#7fd4ff}.cb-hd{background:#0a3a6a;color:#6bc5ff}
+.cb-atmos{background:#7a5f00;color:#ffe66a}.cb-unseen{background:rgba(30,30,50,.75);color:#aaa;border:1px solid rgba(255,255,255,.12)}
+.card-body{padding:9px 10px 8px}
+.card-title{font-size:.86rem;font-weight:700;line-height:1.3;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:3px}
+.card-sub{font-size:.7rem;color:var(--text3)}
+.card-stars{display:flex;gap:0;font-size:11px;margin:3px 0 2px}
+.card-meta{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-top:2px}
+.card-genre{padding:1px 5px;border-radius:4px;font-size:.62rem;background:var(--bg4);color:var(--text2);border:1px solid var(--border)}
+.snd-chip{font-size:.63rem;font-weight:700}.rec-i{font-size:.63rem}
+/* LIST */
+.film-grid.list{display:flex;flex-direction:column;gap:5px;padding:10px 14px}
+.film-card.lc{flex-direction:row;height:72px;min-height:72px;border-radius:var(--r-sm)}
+.film-card.lc .card-poster{width:48px;min-width:48px;height:72px;border-radius:0;aspect-ratio:unset}
+.film-card.lc .poster-overlay,.film-card.lc .fav-pin{display:none}
+.film-card.lc .card-body{flex:1;padding:6px 10px;display:flex;flex-direction:column;justify-content:center;gap:1px;min-width:0}
+.film-card.lc .card-title{-webkit-line-clamp:1;margin-bottom:1px}
+.list-badges{display:flex;gap:3px;flex-wrap:wrap;align-items:center}
+.list-fav{font-size:11px}
+/* PAGES */
+.page{display:none;flex:1}.page.active{display:block}
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px;margin-bottom:14px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:13px;display:flex;flex-direction:column;gap:3px}
+.stat-big{font-size:1.9rem;font-weight:800;color:var(--accent);line-height:1}.stat-lbl{font-size:.72rem;color:var(--text3)}
+.chart-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:13px;margin-bottom:13px}
+.chart-ttl{font-size:.86rem;font-weight:700;margin-bottom:9px;color:var(--text2)}
+.bar-chart{display:flex;flex-direction:column;gap:5px}
+.bar-row{display:flex;align-items:center;gap:7px;font-size:.74rem}
+.bar-lbl{width:120px;text-align:right;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
+.bar-track{flex:1;height:13px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .6s ease}.bar-val{width:24px;color:var(--text3);font-size:.7rem;text-align:right}
+/* TOP */
+.toplist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:13px}
+.toplist-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px}
+.toplist-ttl{font-size:.82rem;font-weight:700;color:var(--gold);margin-bottom:7px}
+.toplist-item{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);font-size:.78rem;cursor:pointer;transition:var(--tr)}
+.toplist-item:last-child{border-bottom:none}.toplist-item:hover{color:var(--accent)}
+.trk{width:16px;color:var(--text3);font-weight:800;font-size:.68rem;flex-shrink:0}
+.trk.r1{color:var(--gold)}.trk.r2{color:#b0b0c8}.trk.r3{color:var(--orange)}
+.tn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tv{color:var(--text2);font-size:.7rem;white-space:nowrap}
+/* COMPARE */
+.cmp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:13px;padding:14px}
+.cmp-slot{background:var(--bg2);border:2px dashed var(--border2);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:270px;cursor:pointer;transition:var(--tr)}
+.cmp-slot:hover{border-color:var(--accent);background:var(--bg3)}
+.cmp-slot.filled{border-style:solid;border-color:var(--border);cursor:default;justify-content:flex-start;padding:12px}
+.cmp-poster{width:68px;height:100px;background:var(--bg3);border-radius:var(--r-sm);overflow:hidden;margin:0 auto 7px}
+.cmp-poster img{width:100%;height:100%;object-fit:cover}
+.cmp-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);font-size:.74rem;width:100%}
+.cmp-row:last-of-type{border-bottom:none}.cmp-k{color:var(--text3)}.cmp-v{color:var(--text);font-weight:600}
+/* MODAL */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:200;display:flex;align-items:center;justify-content:center;padding:14px;opacity:0;pointer-events:none;transition:opacity .18s}
+.modal-ov.open{opacity:1;pointer-events:auto}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:650px;max-height:90vh;display:flex;flex-direction:column;transform:scale(.96) translateY(8px);transition:transform .2s ease;overflow:hidden}
+.modal-ov.open .modal{transform:scale(1) translateY(0)}.modal.wide{max-width:800px}
+.m-head{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px}
+.m-title{font-size:.94rem;font-weight:800;flex:1}
+.m-close{width:27px;height:27px;border-radius:var(--r-sm);border:none;background:var(--bg3);color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;flex-shrink:0;transition:var(--tr)}
+.m-close:hover{background:var(--redbg);color:var(--red)}
+.m-body{overflow-y:auto;padding:17px;flex:1;display:flex;flex-direction:column;gap:11px}
+.m-foot{padding:11px 17px;border-top:1px solid var(--border);display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+/* FORM */
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.fgrid{grid-template-columns:1fr}}
+.fg{display:flex;flex-direction:column;gap:3px}.fg.full{grid-column:1/-1}
+.flabel{font-size:.7rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em}
+.finput{padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:.84rem;outline:none;transition:var(--tr);width:100%}
+.finput:focus{border-color:var(--accent);background:var(--bg4)}
+textarea.finput{resize:vertical;min-height:65px;line-height:1.5}
+.fsel{padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:.84rem;outline:none;appearance:none;cursor:pointer;width:100%;transition:var(--tr)}
+.fsel:focus{border-color:var(--accent)}
+.star-row{display:flex;gap:3px}
+.star-btn{font-size:19px;background:none;border:none;color:var(--text3);cursor:pointer;transition:transform .1s,color .1s;padding:0;line-height:1}
+.star-btn.on{color:var(--gold)}.star-btn:hover{transform:scale(1.2);color:var(--gold)}
+.tag-wrap{display:flex;flex-wrap:wrap;gap:3px;padding:5px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);min-height:35px;cursor:text;transition:var(--tr)}
+.tag-wrap:focus-within{border-color:var(--accent);background:var(--bg4)}
+.tag-pill{display:flex;align-items:center;gap:3px;padding:2px 7px;background:var(--accent);color:#fff;border-radius:99px;font-size:.68rem;font-weight:700}
+.tag-pill button{border:none;background:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:11px;padding:0;line-height:1}
+.tag-pill button:hover{color:#fff}
+.tag-input{border:none;background:none;color:var(--text);font-size:.8rem;outline:none;min-width:80px;flex:1}
+.poster-row{display:flex;gap:9px;align-items:flex-start}
+.poster-prev{width:72px;height:108px;border-radius:var(--r-sm);overflow:hidden;background:var(--bg3);border:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--text3)}
+.poster-prev img{width:100%;height:100%;object-fit:cover;display:none}
+.poster-ctrls{flex:1;display:flex;flex-direction:column;gap:5px}
+/* DETAIL */
+.det-grid{display:grid;grid-template-columns:155px 1fr;gap:17px}
+@media(max-width:490px){.det-grid{grid-column:1fr}}
+.det-poster{width:155px;aspect-ratio:2/3;border-radius:var(--r-sm);overflow:hidden;background:var(--bg3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--text3)}
+.det-poster img{width:100%;height:100%;object-fit:cover}
+.det-title{font-size:1.12rem;font-weight:800;line-height:1.3}
+.det-row{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.dsec{background:var(--bg3);border-radius:var(--r-sm);padding:9px 11px;margin-top:3px}
+.dsec-t{font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:5px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 9px;font-size:.79rem}
+.kk{color:var(--text3);white-space:nowrap}.kv2{color:var(--text);font-weight:600}
+.rat-bars{display:flex;flex-direction:column;gap:5px}
+.rb-row{display:flex;align-items:center;gap:6px;font-size:.74rem}
+.rb-lbl{width:50px;color:var(--text3)}.rb-track{flex:1;height:7px;background:var(--border);border-radius:99px;overflow:hidden}.rb-fill{height:100%;border-radius:99px;transition:width .5s ease}.rb-val{width:16px;color:var(--text2);text-align:right;font-weight:700}
+.comment-box{background:var(--bg4);border-radius:var(--r-sm);padding:9px 11px;font-size:.8rem;line-height:1.6;color:var(--text2);font-style:italic;border-left:3px solid var(--accent)}
+.links-list{display:flex;flex-direction:column;gap:3px}
+.link-item{display:flex;align-items:center;gap:5px;font-size:.78rem;color:var(--accent);padding:3px 5px;border-radius:var(--r-xs);transition:var(--tr)}
+.link-item:hover{background:var(--bg4)}
+.tags-disp{display:flex;flex-wrap:wrap;gap:3px}
+.tag-disp{padding:2px 7px;border-radius:99px;font-size:.68rem;font-weight:700;background:var(--accentbg);color:var(--accent);border:1px solid var(--accent2)}
+.q-actions{display:flex;gap:5px;flex-wrap:wrap}
+/* WISHLIST */
+.wish-card{display:flex;align-items:center;gap:9px;padding:8px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);transition:var(--tr)}
+.wish-card:hover{border-color:var(--border2);background:var(--bg3)}
+.wish-poster{width:36px;height:54px;background:var(--bg3);border-radius:var(--r-xs);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:1rem}
+.wish-poster img{width:100%;height:100%;object-fit:cover}
+.wish-info{flex:1;min-width:0}
+.wish-title{font-size:.83rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wish-meta{font-size:.68rem;color:var(--text3);margin-top:1px}
+.wish-actions{display:flex;gap:3px;flex-shrink:0}
+.chip{padding:2px 7px;border-radius:99px;font-size:.68rem;font-weight:700;display:inline-flex;align-items:center;gap:3px}
+.chip-green{background:var(--greenbg);color:var(--green)}.chip-blue{background:var(--bluebg);color:var(--blue)}
+.chip-gold{background:var(--goldbg);color:var(--gold)}.chip-red{background:var(--redbg);color:var(--red)}.chip-gray{background:var(--bg4);color:var(--text3)}
+.ac-drop{position:absolute;top:calc(100% + 3px);left:0;right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-sm);max-height:165px;overflow-y:auto;z-index:500;box-shadow:var(--shadow)}
+.ac-item{padding:7px 10px;font-size:.8rem;cursor:pointer;color:var(--text2);transition:var(--tr)}
+.ac-item:hover{background:var(--bg3);color:var(--text)}
+#toasts{position:fixed;bottom:16px;right:16px;z-index:999;display:flex;flex-direction:column;gap:5px;pointer-events:none}
+.toast{padding:8px 13px;border-radius:var(--r-sm);background:var(--bg2);border:1px solid var(--border2);color:var(--text);font-size:.8rem;box-shadow:var(--shadow);transform:translateX(120%);transition:transform .25s ease;pointer-events:auto;max-width:260px}
+.toast.show{transform:translateX(0)}.toast.ok{border-color:var(--green);background:var(--greenbg)}.toast.err{border-color:var(--red);background:var(--redbg)}.toast.warn{border-color:var(--gold);background:var(--goldbg)}
+#install-banner{display:none;padding:8px 14px;background:var(--bg3);border-bottom:1px solid var(--border);align-items:center;gap:7px;font-size:.8rem;color:var(--text2)}
+.scroll-top{position:fixed;bottom:66px;right:16px;width:36px;height:36px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .25s;z-index:50;box-shadow:var(--shadow)}
+.scroll-top.vis{opacity:1}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:60px 20px;color:var(--text3);text-align:center}
+.empty-icon{font-size:3rem}
+.dupl-warn{padding:7px 10px;background:var(--goldbg);border:1px solid var(--gold2);border-radius:var(--r-sm);font-size:.78rem;color:var(--gold);display:flex;align-items:center;gap:5px}
+.pg-head{padding:15px 15px 0;display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.pg-title{font-size:1rem;font-weight:800}
+.mob-tabs{display:none;padding:0 8px;gap:1px;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto}
+.mob-tab{padding:9px 10px;border-bottom:2px solid transparent;border-radius:0;border:none;background:none;color:var(--text2);font-size:.74rem;white-space:nowrap;cursor:pointer;transition:var(--tr)}
+.mob-tab.active{border-bottom-color:var(--accent);color:var(--text)}
+.fr{display:flex;gap:6px;align-items:center}.mb4{margin-bottom:4px}
+@media(max-width:768px){
+  .filter-sidebar{position:fixed;left:0;top:54px;bottom:0;z-index:90;transform:translateX(-100%);width:232px!important;min-width:232px!important;padding:10px!important;transition:transform .22s ease;box-shadow:var(--shadow)}
+  .filter-sidebar.mob-open{transform:translateX(0)}
+  .filter-sidebar.collapsed{transform:translateX(-100%)}
+  .film-grid{grid-template-columns:repeat(auto-fill,minmax(142px,1fr));gap:9px;padding:9px}
+  .nav-brand span{display:none}.nav-tabs{display:none}.mob-tabs{display:flex}
+}
+@media(min-width:769px){.mob-tabs{display:none}}
+</style>
+</head>
+<body><div id="err-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#ff5c5c;color:#fff;padding:12px 16px;font-family:monospace;font-size:13px;white-space:pre-wrap;word-break:break-all"></div>
+<script>
+window.onerror=function(msg,src,line,col,err){
+  var b=document.getElementById('err-banner');
+  b.style.display='block';
+  b.textContent='JS ERROR: '+msg+'
+Line: '+line+'
+File: '+src;
+  return false;
+};
+window.addEventListener('unhandledrejection',function(e){
+  var b=document.getElementById('err-banner');
+  b.style.display='block';
+  b.textContent='PROMISE ERROR: '+e.reason;
+});
+</script>
+<div id="app">
+<div id="install-banner">
+  📱 <strong>CineVault</strong> als App installieren
+  <button class="btn btn-sm btn-primary" id="install-btn">Installieren</button>
+  <button class="icon-btn" onclick="document.getElementById('install-banner').style.display='none'" style="margin-left:auto;border:none">✕</button>
+</div>
+<nav class="navbar">
+  <button class="icon-btn" id="sb-toggle" title="Filter">☰</button>
+  <div class="nav-brand">🎬 <span>CineVault</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-page="library">📚 Bibliothek</button>
+    <button class="nav-tab" data-page="wishlist">⭐ Wunschliste</button>
+    <button class="nav-tab" data-page="stats">📊 Statistik</button>
+    <button class="nav-tab" data-page="toplists">🏆 Top-Listen</button>
+    <button class="nav-tab" data-page="compare">⚖️ Vergleich</button>
+  </div>
+  <div class="nav-spacer"></div>
+  <div class="nav-actions">
+    <button class="icon-btn" id="theme-btn">🌙</button>
+    <button class="icon-btn" onclick="openIE()">💾</button>
+    <button class="btn btn-primary btn-sm" onclick="openAdd()">+ Film</button>
+  </div>
+</nav>
+<div class="mob-tabs">
+  <button class="mob-tab active" data-page="library">📚 Bibliothek</button>
+  <button class="mob-tab" data-page="wishlist">⭐ Wunsch</button>
+  <button class="mob-tab" data-page="stats">📊 Statistik</button>
+  <button class="mob-tab" data-page="toplists">🏆 Top</button>
+  <button class="mob-tab" data-page="compare">⚖️ Vergleich</button>
+</div>
+<div class="main-content">
+  <aside class="filter-sidebar" id="filter-sidebar">
+    <div><div class="fs-head" onclick="toggleFS(this)">🔍 Suche & Status <span>▾</span></div>
+    <div class="fs-body">
+      <input class="f-input" id="fs-s" placeholder="Filmtitel…" oninput="applyFilters()">
+      <select class="f-select" id="fs-w" onchange="applyFilters()"><option value="">Alle Status</option><option value="true">✅ Gesehen</option><option value="false">⬜ Ungesehen</option></select>
+      <select class="f-select" id="fs-fav" onchange="applyFilters()"><option value="">Alle</option><option value="true">⭐ Favoriten</option></select>
+      <select class="f-select" id="fs-rec" onchange="applyFilters()"><option value="">Alle Empfehlungen</option><option value="true">👍 Empfohlen</option><option value="false">👎 Nicht empfohlen</option></select>
+    </div></div>
+    <div><div class="fs-head" onclick="toggleFS(this)">🎬 Film-Details <span>▾</span></div>
+    <div class="fs-body">
+      <div class="f-label">Genre</div>
+      <select class="f-select" id="fs-genre" onchange="applyFilters()"><option value="">Alle Genres</option></select>
+      <div class="f-label">Jahr</div>
+      <div class="range-row"><input type="number" id="fs-yf" placeholder="2000" oninput="applyFilters()">–<input type="number" id="fs-yt" placeholder="2025" oninput="applyFilters()"></div>
+      <div class="f-label">Dauer (Min.)</div>
+      <div class="range-row"><input type="number" id="fs-df" placeholder="60" oninput="applyFilters()">–<input type="number" id="fs-dt" placeholder="240" oninput="applyFilters()"></div>
+    </div></div>
+    <div><div class="fs-head" onclick="toggleFS(this)">🔊 Audio & Bild <span>▾</span></div>
+    <div class="fs-body">
+      <div class="f-label">Auflösung</div>
+      <label class="f-cb"><input type="checkbox" value="4K" onchange="applyFilters()"> <span class="cb cb-4k">4K</span></label>
+      <label class="f-cb"><input type="checkbox" value="Full HD" onchange="applyFilters()"> <span class="cb cb-fhd">Full HD</span></label>
+      <label class="f-cb"><input type="checkbox" value="HD" onchange="applyFilters()"> <span class="cb cb-hd">HD</span></label>
+      <div class="f-label">Dolby Atmos</div>
+      <select class="f-select" id="fs-atmos" onchange="applyFilters()"><option value="">Alle</option><option value="yes">🟡 Mit Dolby Atmos</option><option value="no">Kein Atmos</option></select>
+      <div class="f-label">Sprache</div>
+      <select class="f-select" id="fs-lang" onchange="applyFilters()"><option value="">Alle Sprachen</option></select>
+    </div></div>
+    <div><div class="fs-head" onclick="toggleFS(this)">⭐ Bewertung <span>▾</span></div>
+    <div class="fs-body">
+      <select class="f-select" id="fs-rat" onchange="applyFilters()"><option value="">Alle Bewertungen</option><option value="Top">🌟 Top</option><option value="Sehr gut">Sehr gut</option><option value="Gut">Gut</option><option value="Geht">Geht</option><option value="Schlecht">Schlecht</option><option value="Sehr schlecht">Sehr schlecht</option></select>
+      <div class="f-label">Max. Ton-Note</div>
+      <select class="f-select" id="fs-snd" onchange="applyFilters()"><option value="">Alle</option><option value="1">Note 1</option><option value="2">Note 1-2</option><option value="3">Note 1-3</option></select>
+    </div></div>
+    <div><div class="fs-head" onclick="toggleFS(this)">🏷️ Tags <span>▾</span></div>
+    <div class="fs-body" id="tag-filter-body"></div></div>
+    <button class="f-reset" onclick="resetFilters()">↺ Filter zurücksetzen</button>
+  </aside>
+  <div class="content-area" id="content-area">
+    <div class="page active" id="page-library">
+      <div class="content-header">
+        <div class="search-wrap" style="position:relative">
+          <span class="search-icon">🔍</span>
+          <input id="hdr-search" type="search" placeholder="Film suchen…" oninput="syncSearch(this.value)" autocomplete="off">
+          <div class="ac-drop" id="hdr-ac" style="display:none"></div>
+        </div>
+        <select class="sort-select" id="sort-sel" onchange="applyFilters()">
+          <option value="order">Meine Reihenfolge</option><option value="title">Name A-Z</option><option value="title-d">Name Z-A</option>
+          <option value="year-d">Jahr (neu→alt)</option><option value="year">Jahr (alt→neu)</option>
+          <option value="rating">Bewertung ↓</option><option value="runtime-d">Dauer ↓</option><option value="runtime">Dauer ↑</option><option value="sound">Ton-Note ↑</option>
+        </select>
+        <div class="view-toggle"><button class="view-btn active" id="vg" onclick="setView('grid')">⊞</button><button class="view-btn" id="vl" onclick="setView('list')">☰</button></div>
+        <span class="film-count" id="film-count">0 Filme</span>
+      </div>
+      <div id="film-grid" class="film-grid"></div>
+    </div>
+    <div class="page" id="page-wishlist"><div class="pg-head"><div class="pg-title">⭐ Wunschliste</div><button class="btn btn-primary btn-sm" onclick="openAdd(true)">+ Wunsch</button></div><div style="padding:0 15px 15px" id="wish-content"></div></div>
+    <div class="page" id="page-stats"><div class="pg-head"><div class="pg-title">📊 Statistiken</div></div><div style="padding:0 15px 15px" id="stats-content"></div></div>
+    <div class="page" id="page-toplists"><div class="pg-head"><div class="pg-title">🏆 Top-Listen</div></div><div style="padding:0 15px 15px"><div class="toplist-grid" id="top-content"></div></div></div>
+    <div class="page" id="page-compare"><div class="pg-head"><div class="pg-title">⚖️ Vergleich</div><button class="btn btn-ghost btn-sm" onclick="clearCmp()">Leeren</button></div><div class="cmp-grid" id="cmp-area"></div></div>
+  </div>
+</div>
+</div>
+<div id="toasts"></div>
+<button class="scroll-top" id="scroll-top" onclick="document.getElementById('content-area').scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<!-- ADD MODAL -->
+<div class="modal-ov" id="add-ov" onclick="ovClick(event,'add-ov')">
+<div class="modal wide"><div class="m-head"><div class="m-title" id="add-title">Film hinzufügen</div><button class="m-close" onclick="closeAdd()">✕</button></div>
+<div class="m-body">
+  <div class="dupl-warn" id="dupl-warn" style="display:none">⚠️ <span id="dupl-txt"></span></div>
+  <div class="fgrid">
+    <div class="fg full"><div class="flabel">Filmtitel *</div><input class="finput" id="f-title" placeholder="z.B. Inception" oninput="checkDupl()"></div>
+    <div class="fg"><div class="flabel">Erscheinungsjahr</div><input class="finput" id="f-year" type="number" min="1888" max="2030" placeholder="2024"></div>
+    <div class="fg"><div class="flabel">Spiellänge (Min.)</div><input class="finput" id="f-rt" type="number" min="1" placeholder="120"></div>
+    <div class="fg"><div class="flabel">Auflösung</div><select class="fsel" id="f-res"><option value="4K">4K</option><option value="Full HD">Full HD</option><option value="HD">HD</option><option value="">Unbekannt</option></select></div>
+    <div class="fg" style="position:relative"><div class="flabel">Genre</div><input class="finput" id="f-genre" placeholder="Action, Drama…" autocomplete="off" oninput="showGenreAC()"><div class="ac-drop" id="genre-ac" style="display:none"></div></div>
+    <div class="fg"><div class="flabel">Dolby Atmos (Sprachen)</div><input class="finput" id="f-atmos" placeholder="Deutsch, Englisch oder Nein"></div>
+    <div class="fg"><div class="flabel">Weitere Sprachen</div><input class="finput" id="f-lang" placeholder="Deutsch, Englisch"></div>
+    <div class="fg"><div class="flabel">Status</div><select class="fsel" id="f-watch"><option value="false">⬜ Ungesehen</option><option value="true">✅ Gesehen</option></select></div>
+    <div class="fg"><div class="flabel">Gesamtbewertung</div><select class="fsel" id="f-rat"><option value="">– keine –</option><option value="Top">🌟 Top</option><option value="Sehr gut">Sehr gut</option><option value="Gut">Gut</option><option value="Geht">Geht</option><option value="Schlecht">Schlecht</option><option value="Sehr schlecht">Sehr schlecht</option></select></div>
+    <div class="fg"><div class="flabel">Ton-Note (1=beste)</div><select class="fsel" id="f-snd"><option value="">–</option><option value="1">1 – Exzellent</option><option value="2">2 – Sehr gut</option><option value="3">3 – Gut</option><option value="4">4 – Befriedigend</option><option value="5">5 – Ausreichend</option></select></div>
+    <div class="fg"><div class="flabel">Story (Sterne)</div><div class="star-row" id="stars-story"></div></div>
+    <div class="fg"><div class="flabel">Bild (Sterne)</div><div class="star-row" id="stars-image"></div></div>
+    <div class="fg"><div class="flabel">Weiterempfehlung</div><select class="fsel" id="f-rec"><option value="">–</option><option value="true">👍 Ja</option><option value="false">👎 Nein</option></select></div>
+    <div class="fg"><div class="flabel">Wunschliste</div><select class="fsel" id="f-wish"><option value="false">Nein</option><option value="true">⭐ Ja</option></select></div>
+    <div class="fg full"><div class="flabel">Poster / Cover</div>
+      <div class="poster-row">
+        <div class="poster-prev" id="poster-prev">🎬<img id="poster-img" src="" alt="" style="display:none"></div>
+        <div class="poster-ctrls">
+          <input class="finput" id="f-poster-url" placeholder="Poster-URL (https://...)" oninput="updatePrev()">
+          <div style="text-align:center;font-size:.68rem;color:var(--text3)">oder</div>
+          <input type="file" id="f-poster-file" accept="image/*" onchange="handleUpload()" style="font-size:.74rem">
+        </div>
+      </div>
+    </div>
+    <div class="fg full"><div class="flabel">Kommentar</div><textarea class="finput" id="f-comment" placeholder="Deine Meinung…"></textarea></div>
+    <div class="fg full"><div class="flabel">Persönliche Notizen</div><textarea class="finput" id="f-notes" placeholder="Nur für dich…" style="min-height:46px"></textarea></div>
+    <div class="fg full"><div class="flabel">Tags</div>
+      <div class="tag-wrap" id="tag-wrap" onclick="document.getElementById('tag-in').focus()">
+        <div id="tag-pills"></div>
+        <div style="position:relative;flex:1;min-width:90px"><input class="tag-input" id="tag-in" placeholder="Tag + Enter" onkeydown="tagKey(event)" oninput="showTagAC()"><div class="ac-drop" id="tag-ac" style="display:none"></div></div>
+      </div>
+    </div>
+    <div class="fg"><div class="flabel">Links</div><div id="links-c"><div class="fr mb4"><input class="finput" id="link-0" placeholder="https://..."><button class="icon-btn" onclick="addLink()" type="button">+</button></div></div></div>
+    <div class="fg"><div class="flabel">Kaufdatum</div><input class="finput" id="f-buy" type="date"></div>
+    <div class="fg"><div class="flabel">Gesehen am</div><input class="finput" id="f-wdate" type="date"></div>
+    <div class="fg full"><div class="flabel">Favorit</div><select class="fsel" id="f-fav"><option value="false">Nein</option><option value="true">⭐ Ja</option></select></div>
+  </div>
+</div>
+<div class="m-foot"><button class="btn btn-ghost" onclick="closeAdd()">Abbrechen</button><button class="btn btn-primary" onclick="saveFilm()">💾 Speichern</button></div>
+</div></div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-ov" id="det-ov" onclick="ovClick(event,'det-ov')">
+<div class="modal wide"><div class="m-head"><div class="m-title" id="det-title"></div><button class="m-close" onclick="closeDet()">✕</button></div>
+<div class="m-body" id="det-body"></div><div class="m-foot" id="det-foot"></div></div></div>
+
+<!-- SELECT MODAL -->
+<div class="modal-ov" id="sel-ov" onclick="ovClick(event,'sel-ov')">
+<div class="modal"><div class="m-head"><div class="m-title">Film auswählen</div><button class="m-close" onclick="closeSel()">✕</button></div>
+<div class="m-body"><input class="finput" id="sel-s" placeholder="Suchen…" oninput="renderSel()"><div id="sel-list" style="margin-top:8px;display:flex;flex-direction:column;gap:3px;max-height:320px;overflow-y:auto"></div></div></div></div>
+
+<!-- IE MODAL -->
+<div class="modal-ov" id="ie-ov" onclick="ovClick(event,'ie-ov')">
+<div class="modal"><div class="m-head"><div class="m-title">💾 Import / Export</div><button class="m-close" onclick="document.getElementById('ie-ov').classList.remove('open')">✕</button></div>
+<div class="m-body">
+  <div class="chart-box"><div class="chart-ttl">📤 Export</div><p style="font-size:.8rem;color:var(--text2);margin-bottom:8px">Alle Filme als JSON exportieren.</p><button class="btn btn-primary" onclick="exportDB()">JSON exportieren</button></div>
+  <div class="chart-box"><div class="chart-ttl">📥 Import</div><p style="font-size:.8rem;color:var(--text2);margin-bottom:8px">Vorher exportierte JSON importieren.</p><input type="file" id="ie-file" accept=".json" onchange="importDB()" style="font-size:.78rem"></div>
+</div></div></div>
+
+<script>
+const RAT_ORD={'Top':6,'Sehr gut':5,'Gut':4,'Geht':3,'Schlecht':2,'Sehr schlecht':1,'':0};
+const RAT_COL={'Top':'#f6c90e','Sehr gut':'#30d988','Gut':'#4db8ff','Geht':'#ff9f43','Schlecht':'#ff7f40','Sehr schlecht':'#ff5c5c'};
+const GENRES=['Action','Animation','Biografie','Demo','Dokumentation','Drama','Fantasy','Horror','Komödie','Krimi','Romance','Science Fiction','Thriller','Western'];
+let db=[],editId=null,view='grid',cmpSlots=[null,null,null],selCb=null,cTags=[],cLinks=[''],cStars={story:0,img:0},deferInstall=null,curPage='library';
+
+function ratStars(r){return{Top:5,'Sehr gut':5,Gut:4,Geht:3,Schlecht:2,'Sehr schlecht':1}[r]||0}
+function starsHtml(n,max=5,col='var(--gold)'){let s='';for(let i=1;i<=max;i++)s+=`<span style="color:${i<=n?col:'var(--text3)'};font-size:11px">&#9733;</span>`;return s}
+function hasAtmos(f){const a=(f.dolbyAtmos||'').toLowerCase().trim();return a&&a!=='nein'&&a!=='false'&&a!==''}
+function sndCol(n){if(!n)return'var(--text3)';if(n<=1)return'var(--green)';if(n<=2)return'var(--blue)';if(n<=3)return'var(--gold)';return'var(--red)'}
+function h(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+
+function loadDB(){try{const s=localStorage.getItem('cv_db2');if(s){db=JSON.parse(s);return}}catch(e){}db=SEED.map(f=>({...f}));saveDB()}
+function saveDB(){
+  try{localStorage.setItem('cv_db2',JSON.stringify(db));}
+  catch(e){
+    if(e.name==='QuotaExceededError'||e.name==='NS_ERROR_DOM_QUOTA_REACHED'){
+      const st=db.map(f=>({...f,poster:f.poster&&f.poster.startsWith('data:')?'':f.poster}));
+      try{localStorage.setItem('cv_db2',JSON.stringify(st));db=st;toast('Speicher voll: Poster-Uploads entfernt. URL stattdessen verwenden.','warn');}
+      catch(e2){toast('Speicher vollständig voll!','err');}
+    }
+  }
+}
+function nextId(){return db.length?Math.max(...db.map(f=>f.id))+1:1}
+async function compressImg(dataUrl){
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{const max=320,r=Math.min(max/img.width,1);const c=document.createElement('canvas');c.width=Math.round(img.width*r);c.height=Math.round(img.height*r);c.getContext('2d').drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',0.7));};
+    img.onerror=()=>res(dataUrl);img.src=dataUrl;
+  });
+}
+
+function getFiltered(){
+  const qs=(document.getElementById('fs-s')?.value||'').toLowerCase();
+  const qw=document.getElementById('fs-w')?.value||'';const qfav=document.getElementById('fs-fav')?.value||'';
+  const qrec=document.getElementById('fs-rec')?.value||'';const qg=document.getElementById('fs-genre')?.value||'';
+  const yf=parseInt(document.getElementById('fs-yf')?.value)||0;const yt=parseInt(document.getElementById('fs-yt')?.value)||9999;
+  const df=parseInt(document.getElementById('fs-df')?.value)||0;const dt=parseInt(document.getElementById('fs-dt')?.value)||9999;
+  const qat=document.getElementById('fs-atmos')?.value||'';const ql=document.getElementById('fs-lang')?.value||'';
+  const qr=document.getElementById('fs-rat')?.value||'';const qs2=parseInt(document.getElementById('fs-snd')?.value)||99;
+  const sort=document.getElementById('sort-sel')?.value||'order';
+  const resF=[...document.querySelectorAll('.fs-body input[type=checkbox]:checked')].map(c=>c.value);
+  const tagF=[...document.querySelectorAll('#tag-filter-body input:checked')].map(c=>c.value);
+  let arr=db.filter(f=>{
+    if(f.wishlist)return false;
+    if(qs&&!f.title.toLowerCase().includes(qs))return false;
+    if(qw!==''&&String(f.watched)!==qw)return false;
+    if(qfav!==''&&String(f.favorite)!==qfav)return false;
+    if(qrec!==''&&String(f.recommended)!==qrec)return false;
+    if(qg&&f.genre!==qg)return false;
+    if(f.year&&(f.year<yf||f.year>yt))return false;
+    if(f.runtime&&(f.runtime<df||f.runtime>dt))return false;
+    if(qat==='yes'&&!hasAtmos(f))return false;
+    if(qat==='no'&&hasAtmos(f))return false;
+    if(ql&&!(f.audioLanguages||'').includes(ql)&&!(f.dolbyAtmos||'').includes(ql))return false;
+    if(qr&&f.ratingOverall!==qr&&!(qr==='Sehr gut'&&f.ratingOverall==='Top'))return false;
+    if(qs2<99&&(!f.soundNote||f.soundNote>qs2))return false;
+    if(resF.length&&!resF.includes(f.resolution))return false;
+    if(tagF.length&&!tagF.every(t=>(f.tags||[]).includes(t)))return false;
+    return true;
+  });
+  arr.sort((a,b)=>{switch(sort){
+    case'title':return a.title.localeCompare(b.title);case'title-d':return b.title.localeCompare(a.title);
+    case'year-d':return(b.year||0)-(a.year||0);case'year':return(a.year||0)-(b.year||0);
+    case'rating':return(RAT_ORD[b.ratingOverall]||0)-(RAT_ORD[a.ratingOverall]||0);
+    case'runtime-d':return(b.runtime||0)-(a.runtime||0);case'runtime':return(a.runtime||0)-(b.runtime||0);
+    case'sound':return(a.soundNote||99)-(b.soundNote||99);default:return(a.order||0)-(b.order||0);}});
+  return arr;
+}
+function applyFilters(){if(curPage==='library')renderLib();updateTagPanel()}
+function syncSearch(v){
+  const e=document.getElementById('fs-s');if(e)e.value=v;applyFilters();
+  const ac=document.getElementById('hdr-ac');
+  if(!v){ac.style.display='none';return}
+  const m=db.filter(f=>f.title.toLowerCase().includes(v.toLowerCase())).slice(0,7);
+  if(!m.length){ac.style.display='none';return}
+  ac.innerHTML=m.map(f=>`<div class="ac-item" onclick="openDet(${f.id})">${h(f.title)} <span style="color:var(--text3);font-size:.68rem">${f.year||''}</span></div>`).join('');
+  ac.style.display='block';
+}
+function resetFilters(){
+  ['fs-s','fs-w','fs-fav','fs-rec','fs-genre','fs-atmos','fs-lang','fs-rat','fs-snd'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['fs-yf','fs-yt','fs-df','fs-dt'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.querySelectorAll('.fs-body input[type=checkbox]').forEach(c=>c.checked=false);
+  document.getElementById('hdr-search').value='';applyFilters();toast('Filter zurückgesetzt');
+}
+function toggleFS(el){const b=el.nextElementSibling;b.classList.toggle('closed');el.querySelector('span').textContent=b.classList.contains('closed')?'▸':'▾'}
+
+function renderLib(){
+  const films=getFiltered(),grid=document.getElementById('film-grid');
+  document.getElementById('film-count').textContent=`${films.length} Film${films.length!==1?'e':''}`;
+  if(!films.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🎬</div><div>Keine Filme gefunden</div><button class="btn btn-primary btn-sm" onclick="resetFilters()">Filter zurücksetzen</button></div>';grid.className='film-grid'+(view==='list'?' list':'');return}
+  grid.innerHTML=films.map(cardHtml).join('');grid.className='film-grid'+(view==='list'?' list':'');setupDrag();
+}
+function cardHtml(f){
+  const at=hasAtmos(f),isList=view==='list',stars=ratStars(f.ratingOverall),res=f.resolution||'';
+  const resBadge=res==='4K'?'<span class="cb cb-4k">4K</span>':res==='Full HD'?'<span class="cb cb-fhd">FHD</span>':res==='HD'?'<span class="cb cb-hd">HD</span>':'';
+  const atBadge=at?'<span class="cb cb-atmos">ATMOS</span>':'';
+  const unsBadge=!f.watched?'<span class="cb cb-unseen">NEU</span>':'';
+  const favPin=f.favorite?'<div class="fav-pin">⭐</div>':'';
+  const snd=f.soundNote?`<span class="snd-chip" style="color:${sndCol(f.soundNote)}">🔊${f.soundNote}</span>`:'';
+  const rec=f.recommended===true?'<span class="rec-i">👍</span>':f.recommended===false?'<span class="rec-i">👎</span>':'';
+  const genre=f.genre?`<span class="card-genre">${h(f.genre)}</span>`:'';
+  const atCls=at?' atmos-card':'',favCls=f.favorite?' fav-card':'';
+  const poster=f.poster?`<img src="${h(f.poster)}" alt="${h(f.title)}" loading="lazy">`:`<div class="poster-ph"><div class="ph-i">🎬</div><span>${h(f.title.slice(0,14))}</span></div>`;
+  if(isList){return`<div class="film-card lc${atCls}${favCls}" data-id="${f.id}" onclick="openDet(${f.id})" draggable="true" data-order="${f.order}">
+    <div class="card-poster">${poster}</div>
+    <div class="card-body"><div class="card-title">${h(f.title)}${f.favorite?' <span class="list-fav">⭐</span>':''}</div>
+    <div class="list-badges">${resBadge}${atBadge}${unsBadge}<span class="card-sub">${f.year||''}${f.runtime?' · '+f.runtime+'min':''}</span>${genre}${snd}${rec}<span class="card-stars">${starsHtml(stars)}</span></div></div></div>`;}
+  return`<div class="film-card${atCls}${favCls}" data-id="${f.id}" onclick="openDet(${f.id})" draggable="true" data-order="${f.order}">
+    <div class="card-poster">${poster}<div class="poster-overlay">${resBadge}${atBadge}${unsBadge}</div>${favPin}</div>
+    <div class="card-body"><div class="card-title">${h(f.title)}</div><div class="card-sub">${f.year||''}${f.runtime?' · '+f.runtime+'min':''}</div>
+    <div class="card-stars">${starsHtml(stars)}</div><div class="card-meta">${genre}${snd}${rec}</div></div></div>`;
+}
+
+function renderWish(){
+  const films=db.filter(f=>f.wishlist),el=document.getElementById('wish-content');
+  if(!films.length){el.innerHTML='<div class="empty"><div class="empty-icon">⭐</div><div>Wunschliste leer</div></div>';return}
+  el.innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">${films.map(f=>`<div class="wish-card"><div class="wish-poster">${f.poster?`<img src="${h(f.poster)}" alt="">`:''}</div><div class="wish-info"><div class="wish-title">${h(f.title)}</div><div class="wish-meta">${f.year||''} · ${f.genre||''} ${hasAtmos(f)?'· <span style="color:var(--gold)">ATMOS</span>':''}</div></div><div class="wish-actions"><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();moveWish(${f.id})">✅</button><button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();openDet(${f.id})">ℹ️</button><button class="btn btn-sm btn-danger" onclick="event.stopPropagation();delFilm(${f.id})">🗑️</button></div></div>`).join('')}</div>`;
+}
+function moveWish(id){const f=db.find(x=>x.id===id);if(!f)return;f.wishlist=false;saveDB();renderWish();toast(`"${f.title}" erhalten ✅`,'ok')}
+
+function renderStats(){
+  const all=db.filter(f=>!f.wishlist),w=all.filter(f=>f.watched);
+  const gC={},rC={};
+  all.forEach(f=>{if(f.genre)gC[f.genre]=(gC[f.genre]||0)+1});
+  w.forEach(f=>{if(f.ratingOverall)rC[f.ratingOverall]=(rC[f.ratingOverall]||0)+1});
+  const tR=all.reduce((s,f)=>s+(f.runtime||0),0),wR=w.reduce((s,f)=>s+(f.runtime||0),0);
+  const av=w.length?Math.round(w.reduce((s,f)=>s+ratStars(f.ratingOverall),0)/w.length*10)/10:0;
+  const mg=Math.max(...Object.values(gC),1),mr=Math.max(...Object.values(rC),1);
+  const gb=Object.entries(gC).sort((a,b)=>b[1]-a[1]).map(([g,c])=>`<div class="bar-row"><div class="bar-lbl">${h(g)}</div><div class="bar-track"><div class="bar-fill" style="width:${c/mg*100}%;background:var(--accent)"></div></div><div class="bar-val">${c}</div></div>`).join('');
+  const rb=Object.entries(rC).sort((a,b)=>(RAT_ORD[b[0]]||0)-(RAT_ORD[a[0]]||0)).map(([r,c])=>`<div class="bar-row"><div class="bar-lbl" style="color:${RAT_COL[r]||'var(--text2)'}">${h(r)}</div><div class="bar-track"><div class="bar-fill" style="width:${c/mr*100}%;background:${RAT_COL[r]||'var(--accent)'}"></div></div><div class="bar-val">${c}</div></div>`).join('');
+  document.getElementById('stats-content').innerHTML=`<div class="stats-grid">
+    <div class="stat-card"><div class="stat-big">${all.length}</div><div class="stat-lbl">Filme gesamt</div></div>
+    <div class="stat-card"><div class="stat-big" style="color:var(--green)">${w.length}</div><div class="stat-lbl">Gesehen</div></div>
+    <div class="stat-card"><div class="stat-big" style="color:var(--text3)">${all.length-w.length}</div><div class="stat-lbl">Ungesehen</div></div>
+    <div class="stat-card"><div class="stat-big" style="color:var(--gold)">${all.filter(f=>hasAtmos(f)).length}</div><div class="stat-lbl">Dolby Atmos</div></div>
+    <div class="stat-card"><div class="stat-big" style="color:var(--green)">${all.filter(f=>f.resolution==='4K').length}</div><div class="stat-lbl">In 4K</div></div>
+    <div class="stat-card"><div class="stat-big" style="color:var(--accent)">${av}&#9733;</div><div class="stat-lbl">Ø Bewertung</div></div>
+    <div class="stat-card"><div class="stat-big" style="font-size:1.4rem">${Math.floor(tR/60)}h ${tR%60}m</div><div class="stat-lbl">Gesamtspielzeit</div></div>
+    <div class="stat-card"><div class="stat-big" style="font-size:1.4rem;color:var(--green)">${Math.floor(wR/60)}h ${wR%60}m</div><div class="stat-lbl">Gesehene Spielzeit</div></div>
+  </div>
+  <div class="chart-box"><div class="chart-ttl">Verteilung nach Genre</div><div class="bar-chart">${gb}</div></div>
+  <div class="chart-box"><div class="chart-ttl">Bewertungsverteilung</div><div class="bar-chart">${rb}</div></div>`;
+}
+
+function renderTop(){
+  const a=db.filter(f=>!f.wishlist&&f.watched),top=(arr,n=5)=>arr.slice(0,n);
+  const byR=top([...a].sort((x,y)=>(RAT_ORD[y.ratingOverall]||0)-(RAT_ORD[x.ratingOverall]||0)));
+  const byS=top([...a].filter(f=>f.soundNote).sort((x,y)=>(x.soundNote||99)-(y.soundNote||99)));
+  const byI=top([...a].filter(f=>f.ratingImg).sort((x,y)=>y.ratingImg-x.ratingImg));
+  const bySt=top([...a].filter(f=>f.ratingStory).sort((x,y)=>y.ratingStory-x.ratingStory));
+  const favs=top([...a].filter(f=>f.favorite));const rec=top([...a].filter(f=>f.recommended===true));
+  const newest=top([...db.filter(f=>!f.wishlist)].sort((x,y)=>(y.year||0)-(x.year||0)));
+  const lng=top([...db.filter(f=>!f.wishlist&&f.runtime)].sort((x,y)=>y.runtime-x.runtime));
+  const li=(arr,vFn)=>arr.map((f,i)=>`<div class="toplist-item" onclick="openDet(${f.id})"><div class="trk r${i+1}">${i+1}</div><div class="tn">${h(f.title)}</div><div class="tv">${vFn(f)}</div></div>`).join('')||'<div style="color:var(--text3);font-size:.76rem">Keine Daten</div>';
+  document.getElementById('top-content').innerHTML=`
+    <div class="toplist-card"><div class="toplist-ttl">🌟 Beste Bewertung</div>${li(byR,f=>f.ratingOverall||'–')}</div>
+    <div class="toplist-card"><div class="toplist-ttl">🔊 Bester Ton</div>${li(byS,f=>`Note ${f.soundNote}`)}</div>
+    <div class="toplist-card"><div class="toplist-ttl">📺 Bestes Bild</div>${li(byI,f=>f.ratingImg+'★')}</div>
+    <div class="toplist-card"><div class="toplist-ttl">📖 Beste Story</div>${li(bySt,f=>f.ratingStory+'★')}</div>
+    <div class="toplist-card"><div class="toplist-ttl">⭐ Favoriten</div>${li(favs,f=>f.ratingOverall||'Favorit')}</div>
+    <div class="toplist-card"><div class="toplist-ttl">👍 Empfehlungen</div>${li(rec,f=>f.ratingOverall||'–')}</div>
+    <div class="toplist-card"><div class="toplist-ttl">🆕 Neueste Filme</div>${li(newest,f=>String(f.year||'–'))}</div>
+    <div class="toplist-card"><div class="toplist-ttl">⏱️ Längste Filme</div>${li(lng,f=>f.runtime+'min')}</div>`;
+}
+
+function renderCmp(){
+  const a=document.getElementById('cmp-area');a.innerHTML='';
+  for(let i=0;i<3;i++){
+    const slot=document.createElement('div'),f=cmpSlots[i]?db.find(x=>x.id===cmpSlots[i]):null;
+    if(!f){slot.className='cmp-slot';slot.innerHTML=`<div style="font-size:2rem">➕</div><div style="font-size:.8rem;color:var(--text3)">Film wählen</div>`;slot.onclick=()=>openSel(id=>{cmpSlots[i]=id;renderCmp()});}
+    else{slot.className='cmp-slot filled';
+      slot.innerHTML=`<div class="cmp-poster">${f.poster?`<img src="${h(f.poster)}" alt="">`:''}</div>
+        <div style="font-weight:800;text-align:center;margin-bottom:7px;font-size:.86rem">${h(f.title)}</div>
+        ${cr('Jahr',f.year||'–')}${cr('Laufzeit',f.runtime?f.runtime+'min':'–')}${cr('Auflösung',f.resolution||'–')}
+        ${cr('Dolby Atmos',hasAtmos(f)?'✅ Ja':'❌ Nein')}${cr('Bewertung',f.ratingOverall||'–')}
+        ${cr('Ton-Note',f.soundNote?'Note '+f.soundNote:'–')}${cr('Story',f.ratingStory?f.ratingStory+'★':'–')}
+        ${cr('Empfehlung',f.recommended===true?'👍 Ja':f.recommended===false?'👎 Nein':'–')}${cr('Genre',f.genre||'–')}
+        <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:7px" onclick="cmpSlots[${i}]=null;renderCmp()">Entfernen</button>`;}
+    a.appendChild(slot);
+  }
+}
+function cr(k,v){return`<div class="cmp-row"><span class="cmp-k">${k}</span><span class="cmp-v">${h(String(v))}</span></div>`}
+function clearCmp(){cmpSlots=[null,null,null];renderCmp()}
+
+function openDet(id){
+  const f=db.find(x=>x.id===id);if(!f)return;
+  const at=hasAtmos(f),stars=ratStars(f.ratingOverall),col=RAT_COL[f.ratingOverall]||'var(--text)';
+  const rb=`<div class="rat-bars">
+    ${f.ratingStory?`<div class="rb-row"><div class="rb-lbl">Story</div><div class="rb-track"><div class="rb-fill" style="width:${f.ratingStory/5*100}%;background:var(--accent)"></div></div><div class="rb-val">${f.ratingStory}</div></div>`:''}
+    ${f.ratingImg?`<div class="rb-row"><div class="rb-lbl">Bild</div><div class="rb-track"><div class="rb-fill" style="width:${f.ratingImg/5*100}%;background:var(--blue)"></div></div><div class="rb-val">${f.ratingImg}</div></div>`:''}
+    ${f.soundNote?`<div class="rb-row"><div class="rb-lbl">Ton</div><div class="rb-track"><div class="rb-fill" style="width:${(6-f.soundNote)/5*100}%;background:var(--green)"></div></div><div class="rb-val">${f.soundNote}</div></div>`:''}
+  </div>`;
+  document.getElementById('det-title').textContent=f.title;
+  document.getElementById('det-body').innerHTML=`<div class="det-grid">
+    <div><div class="det-poster">${f.poster?`<img src="${h(f.poster)}" alt="">`:''}</div>
+    <div style="margin-top:7px;display:flex;flex-direction:column;gap:3px">
+      ${f.favorite?'<span class="chip chip-gold">⭐ Favorit</span>':''}
+      ${f.recommended===true?'<span class="chip chip-green">👍 Empfohlen</span>':f.recommended===false?'<span class="chip chip-red">👎 Nicht empfohlen</span>':''}
+      ${at?'<span class="chip chip-gold">🔊 Dolby Atmos</span>':''}
+    </div></div>
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <div class="det-title">${h(f.title)}</div>
+      <div class="det-row">
+        <span class="chip ${f.resolution==='4K'?'chip-green':f.resolution==='Full HD'?'chip-blue':'chip-gray'}">${h(f.resolution||'–')}</span>
+        ${f.year?`<span class="chip chip-gray">${f.year}</span>`:''}
+        ${f.runtime?`<span class="chip chip-gray">${f.runtime} min</span>`:''}
+        ${f.genre?`<span class="chip chip-gray">${h(f.genre)}</span>`:''}
+        ${f.watched?'<span class="chip chip-green">✅ Gesehen</span>':'<span class="chip chip-gray">⬜ Ungesehen</span>'}
+      </div>
+      ${f.ratingOverall?`<div style="font-size:1.05rem;font-weight:800;color:${col}">${starsHtml(stars,5,col)} ${h(f.ratingOverall)}</div>`:''}
+      ${rb}
+      <div class="dsec"><div class="dsec-t">Audio</div><div class="kv"><div class="kk">Dolby Atmos</div><div class="kv2" style="${at?'color:var(--gold)':''}">${h(at?f.dolbyAtmos:'Nein')}</div><div class="kk">Sprachen</div><div class="kv2">${h(f.audioLanguages||'–')}</div></div></div>
+      ${(f.purchaseDate||f.watchedDate)?`<div class="dsec"><div class="dsec-t">Daten</div><div class="kv">${f.purchaseDate?`<div class="kk">Gekauft</div><div class="kv2">${h(f.purchaseDate)}</div>`:''} ${f.watchedDate?`<div class="kk">Gesehen</div><div class="kv2">${h(f.watchedDate)}</div>`:''}</div></div>`:''}
+      ${f.comment?`<div class="comment-box">${h(f.comment)}</div>`:''}
+      ${f.notes?`<div class="dsec"><div class="dsec-t">Notizen</div><div style="font-size:.78rem;color:var(--text2)">${h(f.notes)}</div></div>`:''}
+      ${(f.tags&&f.tags.length)?`<div class="tags-disp">${f.tags.map(t=>`<span class="tag-disp">${h(t)}</span>`).join('')}</div>`:''}
+      ${(f.links&&f.links.filter(Boolean).length)?`<div class="links-list">${f.links.filter(Boolean).map(l=>`<a href="${h(l)}" target="_blank" class="link-item">🔗 ${h(l)}</a>`).join('')}</div>`:''}
+    </div></div>`;
+  document.getElementById('det-foot').innerHTML=`<div class="q-actions">
+    <button class="btn btn-ghost btn-sm" onclick="togFav(${id})">⭐ ${f.favorite?'Entfernen':'Favorit'}</button>
+    <button class="btn btn-ghost btn-sm" onclick="togWatch(${id})">${f.watched?'⬜ Ungesehen':'✅ Gesehen'}</button>
+    <button class="btn btn-ghost btn-sm" onclick="addToCmp(${id})">⚖️ Vergleichen</button>
+  </div>
+  <button class="btn btn-ghost btn-sm" onclick="openEdit(${id})">✏️ Bearbeiten</button>
+  <button class="btn btn-danger btn-sm" onclick="if(confirm('Löschen?'))delFilm(${id})">🗑️</button>`;
+  document.getElementById('det-ov').classList.add('open');
+}
+function closeDet(){document.getElementById('det-ov').classList.remove('open')}
+function togFav(id){const f=db.find(x=>x.id===id);if(!f)return;f.favorite=!f.favorite;saveDB();renderLib();openDet(id);toast(f.favorite?'⭐ Favorit gesetzt':'Favorit entfernt')}
+function togWatch(id){const f=db.find(x=>x.id===id);if(!f)return;f.watched=!f.watched;saveDB();renderLib();openDet(id);toast(f.watched?'✅ Gesehen':'Als ungesehen markiert')}
+function addToCmp(id){const i=cmpSlots.findIndex(s=>!s);if(i===-1){toast('Max. 3 Filme','warn');return}cmpSlots[i]=id;closeDet();switchPage('compare');toast('Zum Vergleich hinzugefügt ✅','ok')}
+
+function openAdd(wish=false){
+  editId=null;cTags=[];cLinks=[''];cStars={story:0,img:0};
+  document.getElementById('add-title').textContent=wish?'Wunsch hinzufügen':'Film hinzufügen';
+  resetForm();if(wish)document.getElementById('f-wish').value='true';
+  initStars();document.getElementById('add-ov').classList.add('open');
+}
+function openEdit(id){
+  const f=db.find(x=>x.id===id);if(!f)return;
+  editId=id;cTags=[...(f.tags||[])];cLinks=[...(f.links||[]),''];cStars={story:f.ratingStory||0,img:f.ratingImg||0};
+  document.getElementById('add-title').textContent='Film bearbeiten';
+  const sv=(elId,val)=>{const e=document.getElementById(elId);if(e)e.value=val};
+  sv('f-title',f.title||'');sv('f-year',f.year||'');sv('f-rt',f.runtime||'');sv('f-res',f.resolution||'4K');
+  sv('f-genre',f.genre||'');sv('f-atmos',f.dolbyAtmos||'');sv('f-lang',f.audioLanguages||'');
+  sv('f-watch',String(f.watched||false));sv('f-rat',f.ratingOverall||'');sv('f-snd',f.soundNote||'');
+  sv('f-rec',f.recommended===true?'true':f.recommended===false?'false':'');
+  sv('f-wish',String(f.wishlist||false));sv('f-fav',String(f.favorite||false));
+  sv('f-comment',f.comment||'');sv('f-notes',f.notes||'');sv('f-buy',f.purchaseDate||'');sv('f-wdate',f.watchedDate||'');
+  sv('f-poster-url',f.poster&&!f.poster.startsWith('data:')?f.poster:'');
+  const img=document.getElementById('poster-img');
+  if(f.poster){img.src=f.poster;img.style.display='block';}else{img.style.display='none';}
+  renderTagPills();renderLinkFields();initStars();document.getElementById('dupl-warn').style.display='none';
+  closeDet();document.getElementById('add-ov').classList.add('open');
+}
+function closeAdd(){document.getElementById('add-ov').classList.remove('open')}
+function resetForm(){
+  ['f-title','f-year','f-rt','f-genre','f-atmos','f-lang','f-comment','f-notes','f-buy','f-wdate','f-poster-url'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('f-res').value='4K';document.getElementById('f-watch').value='false';
+  ['f-rat','f-snd','f-rec'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('f-wish').value='false';document.getElementById('f-fav').value='false';
+  document.getElementById('f-poster-file').value='';
+  const img=document.getElementById('poster-img');img.style.display='none';img.src='';
+  document.getElementById('dupl-warn').style.display='none';cTags=[];cLinks=[''];renderTagPills();renderLinkFields();
+}
+function checkDupl(){
+  const t=document.getElementById('f-title').value.trim().toLowerCase();if(!t)return;
+  const d=db.find(f=>f.title.toLowerCase()===t&&f.id!==editId);
+  const w=document.getElementById('dupl-warn');
+  if(d){w.style.display='flex';document.getElementById('dupl-txt').textContent=`"${d.title}" bereits vorhanden!`;}
+  else w.style.display='none';
+}
+function saveFilm(){
+  const title=document.getElementById('f-title').value.trim();if(!title){toast('Bitte Filmtitel eingeben!','err');return}
+  const links=[...document.querySelectorAll('#links-c input')].map(i=>i.value.trim()).filter(Boolean);
+  const img=document.getElementById('poster-img');
+  const pUrl=document.getElementById('f-poster-url').value.trim();
+  const poster=(img.style.display!=='none'&&img.src&&img.src!==window.location.href)?img.src:pUrl||'';
+  const f={id:editId||nextId(),title,year:parseInt(document.getElementById('f-year').value)||null,runtime:parseInt(document.getElementById('f-rt').value)||null,resolution:document.getElementById('f-res').value||'4K',genre:document.getElementById('f-genre').value.trim()||'',dolbyAtmos:document.getElementById('f-atmos').value.trim()||'',audioLanguages:document.getElementById('f-lang').value.trim()||'',watched:document.getElementById('f-watch').value==='true',ratingOverall:document.getElementById('f-rat').value||'',soundNote:parseInt(document.getElementById('f-snd').value)||null,ratingStory:cStars.story||0,ratingImg:cStars.img||0,recommended:document.getElementById('f-rec').value===''?null:document.getElementById('f-rec').value==='true',wishlist:document.getElementById('f-wish').value==='true',favorite:document.getElementById('f-fav').value==='true',comment:document.getElementById('f-comment').value.trim(),notes:document.getElementById('f-notes').value.trim(),purchaseDate:document.getElementById('f-buy').value||'',watchedDate:document.getElementById('f-wdate').value||'',poster,tags:[...cTags],links,order:editId?db.find(x=>x.id===editId)?.order||db.length+1:db.length+1};
+  if(editId){const i=db.findIndex(x=>x.id===editId);if(i>-1)db[i]=f;}else db.push(f);
+  saveDB();closeAdd();updateFO();renderLib();toast(`"${title}" ${editId?'aktualisiert':'hinzugefügt'} ✅`,'ok');editId=null;
+}
+function delFilm(id){db=db.filter(x=>x.id!==id);saveDB();closeDet();renderLib();renderWish();toast('Film gelöscht 🗑️')}
+
+function initStars(){
+  [['stars-story','story'],['stars-image','img']].forEach(([elId,key])=>{
+    const el=document.getElementById(elId);if(!el)return;el.innerHTML='';
+    for(let i=1;i<=5;i++){const b=document.createElement('button');b.type='button';b.className='star-btn'+(cStars[key]>=i?' on':'');b.textContent='★';b.onclick=()=>{cStars[key]=cStars[key]===i?0:i;initStars()};el.appendChild(b);}
+  });
+}
+function renderTagPills(){const c=document.getElementById('tag-pills');if(!c)return;c.innerHTML=cTags.map(t=>`<span class="tag-pill">${h(t)}<button onclick="rmTag('${h(t)}')" type="button">×</button></span>`).join('');}
+function rmTag(t){cTags=cTags.filter(x=>x!==t);renderTagPills()}
+function tagKey(e){const inp=document.getElementById('tag-in');if((e.key==='Enter'||e.key===',')&&inp.value.trim()){e.preventDefault();const t=inp.value.trim().replace(',','');if(t&&!cTags.includes(t)){cTags.push(t);renderTagPills()}inp.value='';document.getElementById('tag-ac').style.display='none';}else if(e.key==='Backspace'&&!inp.value&&cTags.length){cTags.pop();renderTagPills()}}
+function allTags(){return[...new Set(db.flatMap(f=>f.tags||[]))]}
+function showTagAC(){const inp=document.getElementById('tag-in'),ac=document.getElementById('tag-ac');const v=inp.value.toLowerCase();if(!v){ac.style.display='none';return}const m=allTags().filter(t=>t.toLowerCase().includes(v)&&!cTags.includes(t));if(!m.length){ac.style.display='none';return}ac.innerHTML=m.map(t=>`<div class="ac-item" onclick="selTagAC('${h(t)}')">${h(t)}</div>`).join('');ac.style.display='block';}
+function selTagAC(t){if(!cTags.includes(t))cTags.push(t);document.getElementById('tag-in').value='';document.getElementById('tag-ac').style.display='none';renderTagPills()}
+function updateTagPanel(){const tags=allTags(),b=document.getElementById('tag-filter-body');if(!b)return;if(!tags.length){b.innerHTML='<div style="font-size:.72rem;color:var(--text3);padding:2px 4px">Keine Tags</div>';return}const prev=new Set([...b.querySelectorAll('input:checked')].map(c=>c.value));b.innerHTML=tags.map(t=>`<label class="f-cb"><input type="checkbox" value="${h(t)}" ${prev.has(t)?'checked':''} onchange="applyFilters()"> ${h(t)}</label>`).join('');}
+function renderLinkFields(){const c=document.getElementById('links-c');c.innerHTML='';cLinks.forEach((l,i)=>{const row=document.createElement('div');row.className='fr mb4';row.innerHTML=`<input class="finput" placeholder="https://..." value="${h(l)}" oninput="cLinks[${i}]=this.value">`;if(i===cLinks.length-1){const b=document.createElement('button');b.className='icon-btn';b.type='button';b.textContent='+';b.onclick=addLink;row.appendChild(b);}c.appendChild(row);});}
+function addLink(){cLinks.push('');renderLinkFields()}
+function updatePrev(){const url=document.getElementById('f-poster-url').value.trim();const img=document.getElementById('poster-img');if(url){img.src=url;img.style.display='block';}else if(!img.src||img.src===window.location.href||img.src.length<5){img.style.display='none';img.src='';}}
+function handleUpload(){const file=document.getElementById('f-poster-file').files[0];if(!file)return;const reader=new FileReader();reader.onload=async e=>{const c=await compressImg(e.target.result);const img=document.getElementById('poster-img');img.src=c;img.style.display='block';document.getElementById('f-poster-url').value='';};reader.readAsDataURL(file);}
+function showGenreAC(){const inp=document.getElementById('f-genre'),ac=document.getElementById('genre-ac');const v=inp.value.toLowerCase();if(!v){ac.style.display='none';return}const all=[...new Set([...GENRES,...db.map(f=>f.genre).filter(Boolean)])];const m=all.filter(g=>g.toLowerCase().includes(v)&&g.toLowerCase()!==v);if(!m.length){ac.style.display='none';return}ac.innerHTML=m.map(g=>`<div class="ac-item" onclick="document.getElementById('f-genre').value='${h(g)}';document.getElementById('genre-ac').style.display='none'">${h(g)}</div>`).join('');ac.style.display='block';}
+function updateFO(){
+  const genres=[...new Set(db.map(f=>f.genre).filter(Boolean))].sort();
+  const gs=document.getElementById('fs-genre');if(gs){const cv=gs.value;gs.innerHTML='<option value="">Alle Genres</option>'+genres.map(g=>`<option value="${h(g)}">${h(g)}</option>`).join('');gs.value=cv;}
+  const langs=[...new Set(db.flatMap(f=>(f.audioLanguages||'').split(',').map(s=>s.trim())).filter(Boolean))].sort();
+  const ls=document.getElementById('fs-lang');if(ls){const cv=ls.value;ls.innerHTML='<option value="">Alle Sprachen</option>'+langs.map(l=>`<option value="${h(l)}">${h(l)}</option>`).join('');ls.value=cv;}
+}
+function setView(v){view=v;document.getElementById('vg').classList.toggle('active',v==='grid');document.getElementById('vl').classList.toggle('active',v==='list');renderLib()}
+function switchPage(page){
+  curPage=page;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page)?.classList.add('active');
+  document.querySelectorAll('.nav-tab,.mob-tab').forEach(t=>t.classList.toggle('active',t.dataset.page===page));
+  if(page==='library')renderLib();else if(page==='wishlist')renderWish();else if(page==='stats')renderStats();else if(page==='toplists')renderTop();else if(page==='compare')renderCmp();
+}
+function toggleSidebar(){
+  const sb=document.getElementById('filter-sidebar');
+  if(window.innerWidth<=768){sb.classList.toggle('mob-open');sb.classList.remove('collapsed');}
+  else{sb.classList.toggle('collapsed');sb.classList.remove('mob-open');}
+}
+let dragId=null;
+function setupDrag(){
+  document.querySelectorAll('.film-card[draggable]').forEach(card=>{
+    card.addEventListener('dragstart',e=>{dragId=parseInt(card.dataset.id);e.dataTransfer.effectAllowed='move';card.style.opacity='.5';});
+    card.addEventListener('dragend',()=>{card.style.opacity='1';});
+    card.addEventListener('dragover',e=>{e.preventDefault();});
+    card.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();const tId=parseInt(card.dataset.id);if(dragId&&dragId!==tId){const s=db.find(f=>f.id===dragId),t=db.find(f=>f.id===tId);if(s&&t){const tmp=s.order;s.order=t.order;t.order=tmp;saveDB();renderLib();}}});
+  });
+}
+function openSel(cb){selCb=cb;document.getElementById('sel-s').value='';renderSel();document.getElementById('sel-ov').classList.add('open')}
+function closeSel(){document.getElementById('sel-ov').classList.remove('open');selCb=null}
+function renderSel(){const q=document.getElementById('sel-s').value.toLowerCase();const films=db.filter(f=>!f.wishlist&&(!q||f.title.toLowerCase().includes(q))).slice(0,30);document.getElementById('sel-list').innerHTML=films.map(f=>`<div class="f-cb" style="padding:7px 9px;cursor:pointer" onclick="selCb&&selCb(${f.id});closeSel()">${h(f.title)} <span style="color:var(--text3);font-size:.7rem">${f.year||''}</span></div>`).join('')||'<div style="color:var(--text3);font-size:.8rem">Keine Treffer</div>';}
+function openIE(){document.getElementById('ie-ov').classList.add('open')}
+function exportDB(){const b=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='cinevault_export.json';a.click();URL.revokeObjectURL(u);toast('Export fertig 📦','ok')}
+function importDB(){const file=document.getElementById('ie-file').files[0];if(!file)return;const r=new FileReader();r.onload=e=>{try{const imp=JSON.parse(e.target.result);if(!Array.isArray(imp))throw 0;let added=0;imp.forEach(f=>{const i=db.findIndex(x=>x.id===f.id);if(i>-1)db[i]=f;else{db.push(f);added++;}});saveDB();updateFO();renderLib();toast(`Import: ${added} neu / ${imp.length-added} aktualisiert ✅`,'ok');}catch(ex){toast('Import-Fehler','err')}};r.readAsText(file);document.getElementById('ie-ov').classList.remove('open');}
+function ovClick(e,id){if(e.target.id===id)document.getElementById(id).classList.remove('open')}
+function setTheme(t){document.documentElement.setAttribute('data-theme',t);document.getElementById('theme-btn').textContent=t==='dark'?'🌙':'☀️';localStorage.setItem('cv_theme',t);}
+function toast(msg,type=''){const c=document.getElementById('toasts');const t=document.createElement('div');t.className='toast'+(type?' '+type:'');t.textContent=msg;c.appendChild(t);setTimeout(()=>t.classList.add('show'),10);setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),280);},3000);}
+
+document.addEventListener('DOMContentLoaded',()=>{try{
+  loadDB();setTheme(localStorage.getItem('cv_theme')||'dark');updateFO();renderLib();updateTagPanel();
+  document.querySelectorAll('.nav-tab,.mob-tab').forEach(tab=>{tab.addEventListener('click',()=>switchPage(tab.dataset.page));});
+  document.getElementById('sb-toggle').addEventListener('click',e=>{e.stopPropagation();toggleSidebar();});
+  document.getElementById('theme-btn').addEventListener('click',()=>{setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');});
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferInstall=e;document.getElementById('install-banner').style.display='flex';});
+  document.getElementById('install-btn').addEventListener('click',async()=>{if(deferInstall){deferInstall.prompt();const r=await deferInstall.userChoice;if(r.outcome==='accepted')document.getElementById('install-banner').style.display='none';deferInstall=null;}});
+  document.getElementById('content-area').addEventListener('scroll',function(){document.getElementById('scroll-top').classList.toggle('vis',this.scrollTop>300);});
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('.search-wrap'))document.getElementById('hdr-ac').style.display='none';
+    if(!e.target.closest('#f-genre'))document.getElementById('genre-ac').style.display='none';
+    if(!e.target.closest('#tag-wrap'))document.getElementById('tag-ac').style.display='none';
+    if(window.innerWidth<=768&&!e.target.closest('.filter-sidebar')&&!e.target.closest('#sb-toggle'))document.getElementById('filter-sidebar').classList.remove('mob-open');
+  });
+});
+
+const SEED=[
+  {id:1,title:"Alita: Battle Angel",year:2019,runtime:122,resolution:"4K",genre:"Action",watched:true,dolbyAtmos:"Englisch",audioLanguages:"Englisch",ratingOverall:"Sehr gut",soundNote:1,ratingStory:0,ratingImg:0,recommended:true,comment:"Sehr guter Film mit super Sound. Cliffhanger am Ende.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:1},
+  {id:2,title:"Aquaman",year:2018,runtime:143,resolution:"4K",genre:"Action",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Gut",soundNote:2,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:2},
+  {id:3,title:"Avatar 2",year:2022,runtime:193,resolution:"4K",genre:"Action",watched:true,dolbyAtmos:"Englisch",audioLanguages:"Englisch",ratingOverall:"Gut",soundNote:1,ratingStory:0,ratingImg:0,recommended:true,comment:"Ton und Bild sind der Hammer",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:3},
+  {id:4,title:"Bohemian Rhapsody",year:2018,runtime:134,resolution:"4K",genre:"Biografie",watched:true,dolbyAtmos:"Englisch",audioLanguages:"Englisch",ratingOverall:"Sehr gut",soundNote:2,ratingStory:0,ratingImg:0,recommended:true,comment:"Sehr guter Film über Queen. Ton und Musik hervorragend.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:4},
+  {id:5,title:"Deepwater Horizon",year:2016,runtime:106,resolution:"4K",genre:"Action",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Gut",soundNote:1,ratingStory:0,ratingImg:0,recommended:true,comment:"Brachialer Sound. Sehr zu empfehlen für Heimkino.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:5},
+  {id:6,title:"Der Herr der Ringe Trilogie",year:2001,runtime:243,resolution:"4K",genre:"Fantasy",watched:true,dolbyAtmos:"Englisch",audioLanguages:"Englisch",ratingOverall:"Top",soundNote:null,ratingStory:5,ratingImg:5,recommended:true,comment:"",poster:"",tags:["Lieblingsfilm"],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:true,links:[],order:6},
+  {id:7,title:"Der Hobbit Trilogie",year:2012,runtime:178,resolution:"4K",genre:"Fantasy",watched:true,dolbyAtmos:"Englisch",audioLanguages:"Englisch",ratingOverall:"Sehr gut",soundNote:2,ratingStory:0,ratingImg:0,recommended:true,comment:"Smaugs Stimme lässt die Lautsprecher beben.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:7},
+  {id:8,title:"Dune",year:2021,runtime:155,resolution:"4K",genre:"Science Fiction",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Gut",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"Langatmig. Bild und Ton gut.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:8},
+  {id:9,title:"Dune 2",year:2024,runtime:166,resolution:"4K",genre:"Science Fiction",watched:false,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:9},
+  {id:10,title:"Everest",year:2015,runtime:121,resolution:"4K",genre:"Drama",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Sehr gut",soundNote:1,ratingStory:0,ratingImg:0,recommended:true,comment:"Erstklassiger Sound. Knacken des Eises exzellent.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:10},
+  {id:11,title:"Fast & Furious 9",year:2021,runtime:150,resolution:"4K",genre:"Action",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Sehr schlecht",soundNote:4,ratingStory:0,ratingImg:0,recommended:false,comment:"Satellit mit Auto zerstört – hört für mich auf.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:11},
+  {id:12,title:"Ghost in the Shell",year:2017,runtime:107,resolution:"4K",genre:"Action",watched:true,dolbyAtmos:"Deutsch",audioLanguages:"Deutsch",ratingOverall:"Gut",soundNote:2,ratingStory:0,ratingImg:0,recommended:true,comment:"Guter Film mit gutem Ton.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:12},
+  {id:13,title:"Godzilla - King of the Monsters",year:2019,runtime:132,resolution:"4K",genre:"Action",watched:false,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:13},
+  {id:14,title:"Godzilla vs. Kong",year:2021,runtime:113,resolution:"4K",genre:"Action",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Geht",soundNote:1,ratingStory:0,ratingImg:0,recommended:false,comment:"Ton gut, Story egal.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:14},
+  {id:15,title:"John Wick 3",year:2019,runtime:132,resolution:"4K",genre:"Action",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Gut",soundNote:2,ratingStory:0,ratingImg:0,recommended:true,comment:"Wie man John Wick kennt.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:15},
+  {id:16,title:"Joker",year:2019,runtime:122,resolution:"4K",genre:"Drama",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Gut",soundNote:null,ratingStory:0,ratingImg:0,recommended:true,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:16},
+  {id:17,title:"Midway - Für die Freiheit",year:2019,runtime:140,resolution:"4K",genre:"Action",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Gut",soundNote:1,ratingStory:0,ratingImg:0,recommended:true,comment:"Sehr guter Atmos-Ton.",poster:"",tags:["Demo Sound"],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:17},
+  {id:18,title:"Mortal Engines",year:2018,runtime:128,resolution:"4K",genre:"Action",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Gut",soundNote:1,ratingStory:0,ratingImg:0,recommended:true,comment:"Sehr guter Atmos-Sound.",poster:"",tags:["Demo Sound"],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:18},
+  {id:19,title:"Mortal Kombat",year:2021,runtime:110,resolution:"Full HD",genre:"Action",watched:true,dolbyAtmos:"Nein",audioLanguages:"Deutsch, Englisch",ratingOverall:"Geht",soundNote:3,ratingStory:0,ratingImg:0,recommended:false,comment:"Story nichts Besonderes.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:19},
+  {id:20,title:"Nobody",year:2021,runtime:92,resolution:"4K",genre:"Action",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Gut",soundNote:3,ratingStory:0,ratingImg:0,recommended:true,comment:"Action im John Wick Stil.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:20},
+  {id:21,title:"Blade Runner 2049",year:2017,runtime:163,resolution:"4K",genre:"Science Fiction",watched:true,dolbyAtmos:"Englisch",audioLanguages:"Englisch",ratingOverall:"Gut",soundNote:2,ratingStory:0,ratingImg:0,recommended:false,comment:"Episch, schwer zu beschreiben.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:21},
+  {id:22,title:"Phantastische Tierwesen 1",year:2016,runtime:133,resolution:"4K",genre:"Fantasy",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Gut",soundNote:2,ratingStory:0,ratingImg:0,recommended:true,comment:"Im Harry Potter Universum gut umgesetzt.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:22},
+  {id:23,title:"Phantastische Tierwesen 2",year:2018,runtime:141,resolution:"4K",genre:"Fantasy",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Gut",soundNote:2,ratingStory:0,ratingImg:0,recommended:true,comment:"Mehr Punch beim Ton erwünscht.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:23},
+  {id:24,title:"Phantastische Tierwesen 3",year:2022,runtime:143,resolution:"4K",genre:"Fantasy",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Geht",soundNote:3,ratingStory:0,ratingImg:0,recommended:false,comment:"Nichts Besonderes.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:24},
+  {id:25,title:"Ready Player One",year:2018,runtime:140,resolution:"4K",genre:"Animation",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Sehr gut",soundNote:1,ratingStory:4,ratingImg:5,recommended:true,comment:"Audiovisuell ein Highlight.",poster:"",tags:["Demo Sound","Lieblingsfilm"],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:true,links:[],order:25},
+  {id:26,title:"Super Mario Bros Film",year:2023,runtime:92,resolution:"4K",genre:"Animation",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Gut",soundNote:3,ratingStory:0,ratingImg:0,recommended:true,comment:"Geht auf viele Spielelemente ein.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:26},
+  {id:27,title:"Tenet",year:2020,runtime:150,resolution:"4K",genre:"Action",watched:true,dolbyAtmos:"Nein",audioLanguages:"Englisch",ratingOverall:"Gut",soundNote:2,ratingStory:0,ratingImg:0,recommended:true,comment:"Story verwirrend, aber guter Action.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:27},
+  {id:28,title:"Tomb Raider",year:2015,runtime:118,resolution:"4K",genre:"Action",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Gut",soundNote:2,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:28},
+  {id:29,title:"Top Gun: Maverick",year:2022,runtime:130,resolution:"4K",genre:"Action",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Gut",soundNote:1,ratingStory:0,ratingImg:0,recommended:true,comment:"Klasse Sound!",poster:"",tags:["Demo Sound"],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:29},
+  {id:30,title:"Transformers - Aufstieg der Bestien",year:2023,runtime:127,resolution:"4K",genre:"Action",watched:true,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"Gut",soundNote:2,ratingStory:0,ratingImg:0,recommended:true,comment:"Film ganz gut.",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:30},
+  {id:31,title:"Unsere Erde 2",year:2017,runtime:94,resolution:"4K",genre:"Dokumentation",watched:false,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:31},
+  {id:32,title:"Nomadland",year:2020,runtime:108,resolution:"Full HD",genre:"Drama",watched:false,dolbyAtmos:"Nein",audioLanguages:"Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:32},
+  {id:33,title:"Operation Overlord",year:2018,runtime:110,resolution:"4K",genre:"Action",watched:false,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:33},
+  {id:34,title:"Ballon",year:2018,runtime:125,resolution:"4K",genre:"Drama",watched:false,dolbyAtmos:"Deutsch",audioLanguages:"Deutsch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:34},
+  {id:35,title:"Jurassic World 2",year:2018,runtime:129,resolution:"4K",genre:"Action",watched:false,dolbyAtmos:"Nein",audioLanguages:"Deutsch, Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:35},
+  {id:36,title:"Jurassic World 3",year:2022,runtime:160,resolution:"4K",genre:"Action",watched:false,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:36},
+  {id:37,title:"1917",year:2019,runtime:119,resolution:"4K",genre:"Action",watched:false,dolbyAtmos:"Englisch",audioLanguages:"Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:37},
+  {id:38,title:"Greenland",year:2020,runtime:120,resolution:"Full HD",genre:"Action",watched:false,dolbyAtmos:"Nein",audioLanguages:"Deutsch, Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:38},
+  {id:39,title:"Valerian",year:2017,runtime:137,resolution:"4K",genre:"Science Fiction",watched:false,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:39},
+  {id:40,title:"Master & Commander",year:2003,runtime:138,resolution:"Full HD",genre:"Action",watched:false,dolbyAtmos:"Nein",audioLanguages:"Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:40},
+  {id:41,title:"Wonder Woman",year:2017,runtime:141,resolution:"4K",genre:"Action",watched:false,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:41},
+  {id:42,title:"Der Marsianer",year:2015,runtime:142,resolution:"4K",genre:"Science Fiction",watched:false,dolbyAtmos:"Nein",audioLanguages:"Deutsch, Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:42},
+  {id:43,title:"Dungeons & Dragons",year:2023,runtime:134,resolution:"4K",genre:"Fantasy",watched:false,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:43},
+  {id:44,title:"Gran Turismo",year:2023,runtime:135,resolution:"4K",genre:"Action",watched:false,dolbyAtmos:"Englisch",audioLanguages:"Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:44},
+  {id:45,title:"The Batman",year:2022,runtime:176,resolution:"4K",genre:"Action",watched:false,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:45},
+  {id:46,title:"Oppenheimer",year:2023,runtime:180,resolution:"4K",genre:"Drama",watched:false,dolbyAtmos:"Nein",audioLanguages:"Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:46},
+  {id:47,title:"Justice League (Snyder Cut)",year:2021,runtime:242,resolution:"4K",genre:"Action",watched:false,dolbyAtmos:"Deutsch, Englisch",audioLanguages:"Deutsch, Englisch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:[],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:47},
+  {id:48,title:"Demo Disc",year:2015,runtime:null,resolution:"4K",genre:"Demo",watched:false,dolbyAtmos:"Deutsch",audioLanguages:"Deutsch",ratingOverall:"",soundNote:null,ratingStory:0,ratingImg:0,recommended:null,comment:"",poster:"",tags:["Demo Sound"],notes:"",purchaseDate:"",watchedDate:"",wishlist:false,favorite:false,links:[],order:48}
+];
+</script>
+</body>
+</html>
