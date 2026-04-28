@@ -230,22 +230,7 @@ textarea.finput{resize:vertical;min-height:65px;line-height:1.5}
 @media(min-width:769px){.mob-tabs{display:none}}
 </style>
 </head>
-<body><div id="err-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#ff5c5c;color:#fff;padding:12px 16px;font-family:monospace;font-size:13px;white-space:pre-wrap;word-break:break-all"></div>
-<script>
-window.onerror=function(msg,src,line,col,err){
-  var b=document.getElementById('err-banner');
-  b.style.display='block';
-  b.textContent='JS ERROR: '+msg+'
-Line: '+line+'
-File: '+src;
-  return false;
-};
-window.addEventListener('unhandledrejection',function(e){
-  var b=document.getElementById('err-banner');
-  b.style.display='block';
-  b.textContent='PROMISE ERROR: '+e.reason;
-});
-</script>
+<body>
 <div id="app">
 <div id="install-banner">
   📱 <strong>CineVault</strong> als App installieren
@@ -253,7 +238,7 @@ window.addEventListener('unhandledrejection',function(e){
   <button class="icon-btn" onclick="document.getElementById('install-banner').style.display='none'" style="margin-left:auto;border:none">✕</button>
 </div>
 <nav class="navbar">
-  <button class="icon-btn" id="sb-toggle" title="Filter">☰</button>
+  <button class="icon-btn" id="sb-toggle" onclick="toggleSidebar()" title="Filter">☰</button>
   <div class="nav-brand">🎬 <span>CineVault</span></div>
   <div class="nav-tabs">
     <button class="nav-tab active" data-page="library">📚 Bibliothek</button>
@@ -420,13 +405,13 @@ function hasAtmos(f){const a=(f.dolbyAtmos||'').toLowerCase().trim();return a&&a
 function sndCol(n){if(!n)return'var(--text3)';if(n<=1)return'var(--green)';if(n<=2)return'var(--blue)';if(n<=3)return'var(--gold)';return'var(--red)'}
 function h(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 
-function loadDB(){try{const s=localStorage.getItem('cv_db2');if(s){db=JSON.parse(s);return}}catch(e){}db=SEED.map(f=>({...f}));saveDB()}
+function loadDB(){try{const s=localStorage.getItem('cv_db');if(s){db=JSON.parse(s);return}}catch(e){}db=SEED.map(f=>({...f}));saveDB()}
 function saveDB(){
-  try{localStorage.setItem('cv_db2',JSON.stringify(db));}
+  try{localStorage.setItem('cv_db',JSON.stringify(db));}
   catch(e){
     if(e.name==='QuotaExceededError'||e.name==='NS_ERROR_DOM_QUOTA_REACHED'){
       const st=db.map(f=>({...f,poster:f.poster&&f.poster.startsWith('data:')?'':f.poster}));
-      try{localStorage.setItem('cv_db2',JSON.stringify(st));db=st;toast('Speicher voll: Poster-Uploads entfernt. URL stattdessen verwenden.','warn');}
+      try{localStorage.setItem('cv_db',JSON.stringify(st));db=st;toast('Speicher voll: Poster-Uploads entfernt. URL stattdessen verwenden.','warn');}
       catch(e2){toast('Speicher vollständig voll!','err');}
     }
   }
@@ -749,10 +734,10 @@ function ovClick(e,id){if(e.target.id===id)document.getElementById(id).classList
 function setTheme(t){document.documentElement.setAttribute('data-theme',t);document.getElementById('theme-btn').textContent=t==='dark'?'🌙':'☀️';localStorage.setItem('cv_theme',t);}
 function toast(msg,type=''){const c=document.getElementById('toasts');const t=document.createElement('div');t.className='toast'+(type?' '+type:'');t.textContent=msg;c.appendChild(t);setTimeout(()=>t.classList.add('show'),10);setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),280);},3000);}
 
-document.addEventListener('DOMContentLoaded',()=>{try{
+document.addEventListener('DOMContentLoaded',()=>{
   loadDB();setTheme(localStorage.getItem('cv_theme')||'dark');updateFO();renderLib();updateTagPanel();
   document.querySelectorAll('.nav-tab,.mob-tab').forEach(tab=>{tab.addEventListener('click',()=>switchPage(tab.dataset.page));});
-  document.getElementById('sb-toggle').addEventListener('click',e=>{e.stopPropagation();toggleSidebar();});
+  // sb-toggle uses inline onclick
   document.getElementById('theme-btn').addEventListener('click',()=>{setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');});
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferInstall=e;document.getElementById('install-banner').style.display='flex';});
   document.getElementById('install-btn').addEventListener('click',async()=>{if(deferInstall){deferInstall.prompt();const r=await deferInstall.userChoice;if(r.outcome==='accepted')document.getElementById('install-banner').style.display='none';deferInstall=null;}});
