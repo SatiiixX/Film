@@ -496,7 +496,7 @@ function getFiltered(){
     case'sound':return(a.soundNote||99)-(b.soundNote||99);default:return a.title.localeCompare(b.title);}});
   return arr;
 }
-function applyFilters(){if(curPage==='library')renderLib();updateTagPanel()}
+function applyFilters(){if(curPage==='library')renderLib();updateTagPanel();savePrefs();}
 function syncSearch(v){
   const e=document.getElementById('fs-s');if(e)e.value=v;applyFilters();
   const ac=document.getElementById('hdr-ac');
@@ -510,7 +510,7 @@ function resetFilters(){
   ['fs-s','fs-w','fs-fav','fs-rec','fs-genre','fs-atmos','fs-lang','fs-rat','fs-snd'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   ['fs-yf','fs-yt','fs-df','fs-dt'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   document.querySelectorAll('.fs-body input[type=checkbox]').forEach(c=>c.checked=false);
-  document.getElementById('hdr-search').value='';applyFilters();toast('Filter zurückgesetzt');
+  document.getElementById('hdr-search').value='';applyFilters();localStorage.removeItem('cv_prefs');toast('Filter zurückgesetzt');
 }
 function toggleFS(el){const b=el.nextElementSibling;b.classList.toggle('closed');el.querySelector('span').textContent=b.classList.contains('closed')?'▸':'▾'}
 
@@ -719,6 +719,72 @@ function loadAtmosFromValue(val){
   if(v.includes('englisch'))document.getElementById('atmos-en').checked=true;
   syncAtmos();
 }
+
+// ── Preferences (filter state, view, page) via localStorage ──
+function savePrefs(){
+  try{
+    const prefs={
+      page: curPage,
+      view: view,
+      sort: document.getElementById('sort-sel')?.value||'title',
+      fs_s: document.getElementById('fs-s')?.value||'',
+      fs_w: document.getElementById('fs-w')?.value||'',
+      fs_fav: document.getElementById('fs-fav')?.value||'',
+      fs_rec: document.getElementById('fs-rec')?.value||'',
+      fs_genre: document.getElementById('fs-genre')?.value||'',
+      fs_atmos: document.getElementById('fs-atmos-drop')?.value||'',
+      fs_rat: document.getElementById('fs-rat')?.value||'',
+      fs_snd: document.getElementById('fs-snd')?.value||'',
+      fs_yf: document.getElementById('fs-yf')?.value||'',
+      fs_yt: document.getElementById('fs-yt')?.value||'',
+      fs_df: document.getElementById('fs-df')?.value||'',
+      fs_dt: document.getElementById('fs-dt')?.value||'',
+      res_4k: document.querySelector('.fs-body input[value="4K"]')?.checked||false,
+      res_fhd: document.querySelector('.fs-body input[value="Full HD"]')?.checked||false,
+      res_hd: document.querySelector('.fs-body input[value="HD"]')?.checked||false,
+      hdr_search: document.getElementById('hdr-search')?.value||'',
+      sidebar_collapsed: document.getElementById('filter-sidebar')?.classList.contains('collapsed')||false,
+    };
+    localStorage.setItem('cv_prefs', JSON.stringify(prefs));
+  }catch(e){}
+}
+function loadPrefs(){
+  try{
+    const s=localStorage.getItem('cv_prefs');
+    if(!s)return;
+    const p=JSON.parse(s);
+    const sv=(id,val)=>{const e=document.getElementById(id);if(e&&val!==undefined)e.value=val;};
+    sv('sort-sel', p.sort);
+    sv('fs-s', p.fs_s);
+    sv('fs-w', p.fs_w);
+    sv('fs-fav', p.fs_fav);
+    sv('fs-rec', p.fs_rec);
+    sv('fs-genre', p.fs_genre);
+    sv('fs-rat', p.fs_rat);
+    sv('fs-snd', p.fs_snd);
+    sv('fs-yf', p.fs_yf);
+    sv('fs-yt', p.fs_yt);
+    sv('fs-df', p.fs_df);
+    sv('fs-dt', p.fs_dt);
+    sv('hdr-search', p.hdr_search);
+    if(p.fs_s)sv('hdr-search', p.fs_s);
+    // Resolution checkboxes
+    const r4=document.querySelector('.fs-body input[value="4K"]');
+    const rfhd=document.querySelector('.fs-body input[value="Full HD"]');
+    const rhd=document.querySelector('.fs-body input[value="HD"]');
+    if(r4)r4.checked=!!p.res_4k;
+    if(rfhd)rfhd.checked=!!p.res_fhd;
+    if(rhd)rhd.checked=!!p.res_hd;
+    // Sidebar state
+    if(p.sidebar_collapsed&&window.innerWidth>768){
+      document.getElementById('filter-sidebar')?.classList.add('collapsed');
+    }
+    // View mode
+    if(p.view)setView(p.view);
+    // Page
+    if(p.page&&p.page!=='library')switchPage(p.page);
+  }catch(e){}
+}
 function saveFilm(){
   const title=document.getElementById('f-title').value.trim();if(!title){toast('Bitte Filmtitel eingeben!','err');return}
   const links=[...document.querySelectorAll('#links-c input')].map(i=>i.value.trim()).filter(Boolean);
@@ -754,18 +820,19 @@ function updateFO(){
   const gs=document.getElementById('fs-genre');if(gs){const cv=gs.value;gs.innerHTML='<option value="">Alle Genres</option>'+genres.map(g=>`<option value="${h(g)}">${h(g)}</option>`).join('');gs.value=cv;}
   // language filter removed
 }
-function setView(v){view=v;document.getElementById('vg').classList.toggle('active',v==='grid');document.getElementById('vl').classList.toggle('active',v==='list');renderLib()}
+function setView(v){view=v;document.getElementById('vg').classList.toggle('active',v==='grid');document.getElementById('vl').classList.toggle('active',v==='list');renderLib();savePrefs();}
 function switchPage(page){
   curPage=page;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+page)?.classList.add('active');
   document.querySelectorAll('.nav-tab,.mob-tab').forEach(t=>t.classList.toggle('active',t.dataset.page===page));
-  if(page==='library')renderLib();else if(page==='wishlist')renderWish();else if(page==='stats')renderStats();else if(page==='toplists')renderTop();else if(page==='compare')renderCmp();
+  if(page==='library')renderLib();else if(page==='wishlist')renderWish();else if(page==='stats')renderStats();else if(page==='toplists')renderTop();else if(page==='compare')renderCmp();savePrefs();
 }
 function toggleSidebar(){
   const sb=document.getElementById('filter-sidebar');
   if(window.innerWidth<=768){sb.classList.toggle('mob-open');sb.classList.remove('collapsed');}
   else{sb.classList.toggle('collapsed');sb.classList.remove('mob-open');}
+  savePrefs();
 }
 let dragId=null;
 function setupDrag(){
@@ -788,7 +855,7 @@ function toast(msg,type=''){const c=document.getElementById('toasts');const t=do
 
 document.addEventListener('DOMContentLoaded',()=>{
   loadDB().then(()=>{
-    setTheme(localStorage.getItem('cv_theme')||'dark');updateFO();renderLib();updateTagPanel();
+    setTheme(localStorage.getItem('cv_theme')||'dark');updateFO();loadPrefs();renderLib();updateTagPanel();
   document.querySelectorAll('.nav-tab,.mob-tab').forEach(tab=>{tab.addEventListener('click',()=>switchPage(tab.dataset.page));});
   // sb-toggle uses inline onclick
   document.getElementById('theme-btn').addEventListener('click',()=>{setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');});
